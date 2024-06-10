@@ -1,0 +1,46 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Contact {
+  id                     String    @id @default(uuid())
+  name                   String
+  email                  String    @unique()
+  tags                   String[]
+  isAbleToReceiveMessage Boolean?  @default(true) @map("is_able_to_receive_message")
+  createdAt              DateTime  @default(now()) @map("created_at")
+  updatedAt              DateTime? @map("updated_at")
+  messages               Message[]
+
+  @@map("contacts")
+}
+
+enum StatusType {
+  PRODUCED
+  ERROR
+  NOT_ABLE
+}
+
+model Message {
+  id                String     @id @default(uuid())
+  contactId         String     @map("contact_id")
+  contact           Contact    @relation(fields: [contactId], references: [id])
+  emailTemplateName String     @map("email_template_name")
+  type              String
+  statusMessage     String     @map("status_message")
+  statusType        StatusType @default(PRODUCED) @map("status_type")
+  createdAt         DateTime   @default(now()) @map("created_at")
+
+  @@map("messages")
+}
